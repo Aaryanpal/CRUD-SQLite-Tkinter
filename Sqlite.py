@@ -1,7 +1,9 @@
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
+from tkinter import filedialog
 from database import *
+import openpyxl
 
 db=Database("SqliteDatabase.db")
 
@@ -187,6 +189,40 @@ def clearData():
     whatsapp_number.set("") 
     email_address.set("")
 
+def exportData():
+    # Get all the data from the Treeview
+    data = []
+    for row in table.get_children():
+        data.append([table.item(row)["values"][i] for i in range(len(table["columns"]))])
+    
+    # Ask the user to choose the location to save the file
+    file_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel files", "*.xlsx")])
+    
+    # If the user cancels the operation, return
+    if not file_path:
+        return
+    
+    # Create a new workbook and select the active worksheet
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    
+    # Add headers to the first row
+    headers = ["S.NO", "ID", "TITLE", "NAME", "AGE", "GENDER", "REGISTRATION NUMBER", "START OF SUBSCRIPTION", "DURATION",
+               "END OF SUBSCRIPTION", "CITY", "DISTRICTS", "STATE", "ADDRESS", "ADDRESS TWO", "MOBILE NUMBER",
+               "WHATSAPP NUMBER", "EMAIL ADDRESS"]
+    ws.append(headers)
+    
+    # Append data to the worksheet
+    for row in data:
+        ws.append(row)
+    
+    # Save the workbook to the chosen location
+    wb.save(file_path)
+    messagebox.showinfo("Export", f"Data has been exported to {file_path}")
+
+btnExport=Button(btn_frame,text="Export",bg="#1289A7",fg="white",width=6,padx=20,pady=5,font=("times",16,"bold"),command=exportData)
+btnExport.grid(row=0,column=4)
+
 btnSub=Button(btn_frame,text="Insert",bg="#01a3a4",fg="white",width=6,padx=20,pady=5,font=("times",16,"bold"),command=addData)
 btnSub.grid(row=0,column=0)
 
@@ -198,6 +234,7 @@ btnDel.grid(row=0,column=2)
 
 btnClr=Button(btn_frame,text="Clear",bg="#1289A7",fg="white",width=6,padx=20,pady=5,font=("times",16,"bold"),command=clearData)
 btnClr.grid(row=0,column=3)
+
 
 myFrame=Frame(window)
 myFrame.place(x=0,y=425,width=1920,height=500)
